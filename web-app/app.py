@@ -1,12 +1,11 @@
 import os
 import base64
-import requests  # <--- Zorg dat deze import bovenaan staat!
+import requests
 from flask import Flask, render_template_string, request
 import hvac
 
 app = Flask(__name__)
 
-# Configuratie ophalen
 VAULT_URL = os.getenv('VAULT_ADDR')
 VAULT_TOKEN = os.getenv('VAULT_TOKEN')
 client = hvac.Client(url=VAULT_URL, token=VAULT_TOKEN)
@@ -49,12 +48,9 @@ def home():
 @app.route('/get-info', methods=['POST'])
 def get_info():
     try:
-        # 1. Haal de API key uit Vault
         secret_resp = client.secrets.kv.v2.read_secret_version(mount_point='secret', path='weather_api')
         real_api_key = secret_resp['data']['data']['apikey']
 
-        # 2. HIER IS DE WIJZIGING: Gebruik de key direct!
-        # We checken NIET meer op "12345...", we gebruiken hem gewoon.
         city = "Antwerp"
         url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={real_api_key}&units=metric"
         
